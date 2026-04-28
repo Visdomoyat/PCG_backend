@@ -28,14 +28,14 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'http://localhost:5173',
     'https://pcgllc.netlify.app',
-    
+    '127.0.0.1',
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'main_app',
+    'content_app',
     'CRM_app',
     'corsheaders',
     'django.contrib.admin',
