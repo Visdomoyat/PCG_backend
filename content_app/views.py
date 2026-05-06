@@ -1,6 +1,8 @@
 from django.shortcuts import render
 
-def home(request):
-    return render(request, 'home.html')
+def contentAdmin(request):
+    return render(request, 'contentAdmin.html')
+def CRMAdmin(request):
+    return render(request, 'CRMAdmin.html')
 
 # Create your views here.

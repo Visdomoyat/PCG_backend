@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PCG Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+
+<body>
+    <header>
+        <div class="header-logo-container">
+            <a href="/">
+                <img src=" " alt="PCG Admin">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'contentAdmin' %}">Content Management</a></li>
+                <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
+                <li><a href="">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <p>Copyright 2026 PCG</p>
+    </footer>
+</body>
+
+</html>
