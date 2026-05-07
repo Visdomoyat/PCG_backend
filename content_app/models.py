@@ -1,7 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
+from django.contrib.auth.models import User
 MAX_VIDEO_BYTES = 60 * 1024 * 1024  # 60MB
 
 
@@ -16,12 +18,15 @@ def validate_video_file(file):
 
 class SiteContent(models.Model):
     title = models.CharField(max_length=200, default="Global Site Content")
+    personal_title = models.CharField(max_length=200, default="Personal Biography")
     personal_bio = models.TextField()
+    professional_title = models.CharField(max_length=200, default="Professional Biography")
     professional_bio = models.TextField()
+    is_active = models.BooleanField(default=True)
     slug = models.SlugField(unique=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
-        "auth.User",
+        User,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -51,6 +56,13 @@ class Story(models.Model):
     published_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="updated_stories",
+    )
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -92,3 +104,74 @@ class StoryMedia(models.Model):
 
     def __str__(self):
         return f"{self.story.title} - {self.media_type} ({self.file.name})"
+
+
+class Testimonial(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    customer_name = models.CharField(max_length=120)
+    customer_email = models.EmailField()
+    company = models.CharField(max_length=120, blank=True)
+    rating = models.PositiveSmallIntegerField(default=5)
+    headline = models.CharField(max_length=200)
+    body = models.TextField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reviewed_testimonials",
+    )
+    is_featured = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-submitted_at"]
+
+    def clean(self):
+        super().clean()
+        if self.rating < 1 or self.rating > 5:
+            raise ValidationError("Rating must be between 1 and 5.")
+
+    def mark_reviewed(self, reviewer, status):
+        self.status = status
+        self.reviewed_by = reviewer
+        self.reviewed_at = timezone.now()
+
+    def __str__(self):
+        return f"{self.customer_name}: {self.headline}"
+
+
+class TestimonialAsset(models.Model):
+    class AssetType(models.TextChoices):
+        IMAGE = "image", "Image"
+        LOGO = "logo", "Logo"
+
+    testimonial = models.ForeignKey(
+        Testimonial, on_delete=models.CASCADE, related_name="assets"
+    )
+    asset_type = models.CharField(max_length=20, choices=AssetType.choices)
+    file = models.FileField(upload_to="testimonials/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["uploaded_at"]
+
+    def __str__(self):
+        return f"{self.testimonial.customer_name} - {self.asset_type}"
+
+
+
+
+
+
+
+
+
+
+
