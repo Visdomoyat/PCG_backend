@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Settings{% endblock %}
+
+{% block content %}
+<div class="content-admin-page">
+    <div class="content-admin-container">
+        <h2>Account Settings</h2>
+        <hr />
+
+        <h3>Change Admin Username</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="username">
+            {{ username_form.as_p }}
+            <button type="submit">Update Username</button>
+        </form>
+
+        <hr />
+
+        <h3>Change Password</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="password">
+            {{ password_form.as_p }}
+            <button type="submit">Update Password</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
