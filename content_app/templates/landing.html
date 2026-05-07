@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Content Landing{% endblock %}
+
+{% block content %}
+<div class="content-admin-page">
+    <div class="content-admin-container">
+        <h2>Content Management Landing</h2>
+        <hr />
+        <p>Select which section you want to manage.</p>
+    </div>
+
+    <div>
+        <article>
+            <h3>Biography</h3>
+            <p>Manage personal and professional biography content.</p>
+            <a href="{% url 'contentAdmin' %}">Go to Biography</a>
+        </article>
+        <hr />
+
+        <article>
+            <h3>Stories</h3>
+            <p>Manage stories content and publishing.</p>
+            <a href="{% url 'storiesPage' %}">Go to Stories</a>
+        </article>
+        <hr />
+
+        <article>
+            <h3>Testimonials</h3>
+            <p>Customer testimonials workflow is not finalized yet.</p>
+            <p><em>Coming soon</em></p>
+        </article>
+    </div>
+</div>
+{% endblock %}

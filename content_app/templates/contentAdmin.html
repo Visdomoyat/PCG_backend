@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Content Admin{% endblock %}
+
+{% block content %}
+<div class="content-admin-page">
+    <div class="content-admin-container">
+        <h2>Content Admin</h2>
+        <hr />
+        {% if editing_entry %}
+            <h3>Edit Content</h3>
+            <form method="post" action="{% url 'editSiteContent' editing_entry.slug %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Update</button>
+                <a href="{% url 'contentAdmin' %}">Cancel</a>
+            </form>
+        {% else %}
+            <h3>Add New Content</h3>
+            <form method="post" action="{% url 'createSiteContent' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Create</button>
+            </form>
+        {% endif %}
+    </div>
+    <div>
+        <h2>Bio Content Entries</h2>
+        {% if entries %}
+            {% for entry in entries %}
+                <article>
+                    <h3>{{ entry.title }}</h3>
+                    <p><strong>{{ entry.personal_title }}:</strong> {{ entry.personal_bio }}</p>
+                    <p><strong>{{ entry.professional_title }}:</strong> {{ entry.professional_bio }}</p>
+                    <p><small>Updated: {{ entry.updated_at }}</small></p>
+                    <a href="{% url 'editSiteContent' entry.slug %}">Edit</a>
+                    <form method="post" action="{% url 'deleteSiteContent' entry.slug %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </article>
+                <hr />
+            {% endfor %}
+        {% else %}
+            <p>No bio content entries yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

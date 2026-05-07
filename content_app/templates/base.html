@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <header>
+    <header class="header">
         <div class="header-logo-container">
             <a href="/">
                 <img src=" " alt="PCG Admin">
@@ -18,13 +18,28 @@
         </div>
         <nav>
             <ul>
-                <li><a href="{% url 'contentAdmin' %}">Content Management</a></li>
-                <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
-                <li><a href="">Logout</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'contentLanding' %}">Content Management</a></li>
+                    <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
+                    <li><a href="{% url 'accountSettings' %}">Account Settings</a></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
     <main>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
         {% block content %}
         {% endblock %}
     </main>
