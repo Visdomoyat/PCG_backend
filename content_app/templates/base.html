@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PCG Admin{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v={{ CSS_CACHE_VERSION }}">
 </head>
 
 <body>
@@ -25,7 +25,7 @@
                     <li>
                         <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
-                            <button type="submit">Logout</button>
+                            <button type="submit" class="pcg-btn">Logout</button>
                         </form>
                     </li>
                 {% else %}
@@ -34,7 +34,7 @@
             </ul>
         </nav>
     </header>
-    <main class="{% block main_classes %}mx-auto w-full max-w-6xl px-4 py-8{% endblock %}">
+    <main class="{% block main_classes %}mx-auto w-full max-w-6xl space-y-4 px-4 py-8{% endblock %}">
         {% if messages %}
             {% for message in messages %}
                 <div class="message">{{ message }}</div>

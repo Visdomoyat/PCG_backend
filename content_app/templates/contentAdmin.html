@@ -2,13 +2,21 @@
 
 {% block title %}Content Admin{% endblock %}
 
-{% block main_classes %}mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
 
 {% block content %}
 <div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Biography content</h1>
+            <p class="mt-1 max-w-2xl text-sm text-zinc-600">Edit entries on the left, set visibility in the middle, and preview how copy reads on the right.</p>
+        </div>
+        <a href="{% url 'contentLanding' %}" class="admin-btn-secondary shrink-0 text-center text-sm">← Content home</a>
+    </div>
     <div class="mb-8 border-b border-zinc-200 pb-6">
-        <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Biography content</h1>
+        <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Biography content</h1>  
         <p class="mt-1 max-w-2xl text-sm text-zinc-600">Edit entries on the left, set visibility in the middle, and preview how copy reads on the right.</p>
+        <a href="{% url 'contentLanding' %}" class="admin-btn-secondary shrink-0 text-center text-sm">← Content home</a>
     </div>
 
     {% if editing_entry %}

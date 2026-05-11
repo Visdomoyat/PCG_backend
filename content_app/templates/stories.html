@@ -2,7 +2,7 @@
 
 {% block title %}Stories Admin{% endblock %}
 
-{% block main_classes %}mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
 
 {% block content %}
 <div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
@@ -14,12 +14,16 @@
         <a href="{% url 'contentLanding' %}" class="admin-btn-secondary shrink-0 text-center text-sm">← Content home</a>
     </div>
 
-    {% if editing_entry %}
-    <form id="stories-admin-form" method="post" enctype="multipart/form-data" action="{% url 'editStory' editing_entry.slug %}" class="space-y-8">
-        <p class="text-sm text-zinc-600">Editing slug: <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-800">{{ editing_entry.slug }}</code></p>
-    {% else %}
-    <form id="stories-admin-form" method="post" enctype="multipart/form-data" action="{% url 'createStory' %}" class="space-y-8">
-    {% endif %}
+    <form
+        id="stories-admin-form"
+        method="post"
+        enctype="multipart/form-data"
+        action="{% if editing_entry %}{% url 'editStory' editing_entry.slug %}{% else %}{% url 'createStory' %}{% endif %}"
+        class="space-y-8"
+    >
+        {% if editing_entry %}
+            <p class="text-sm text-zinc-600">Editing slug: <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-800">{{ editing_entry.slug }}</code></p>
+        {% endif %}
         {% csrf_token %}
 
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:gap-8">
