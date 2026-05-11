@@ -46,28 +46,37 @@
     @apply sticky top-0 z-10 border-b border-zinc-200 bg-white/95 backdrop-blur;
   }
 
-  .header-logo-container {
-    @apply mx-auto flex w-full max-w-6xl items-center justify-between px-4 pt-4;
+  /* One row: logo left, nav group centered in remaining space */
+  .header-shell {
+    @apply mx-auto flex w-full max-w-6xl flex-nowrap items-center gap-3 px-4 py-2.5 sm:gap-6 sm:py-3;
   }
 
-  .header-logo-container a {
-    @apply text-xl font-bold text-zinc-950;
+  .header-logo-link {
+    @apply inline-flex shrink-0 items-center;
   }
 
-  .header-logo-container img {
-    @apply h-10 w-auto rounded-md border border-zinc-200 bg-white p-1;
+  .header-logo-link img {
+    @apply block h-8 w-auto max-h-12 max-w-[min(100%,12rem)] rounded-md border border-zinc-200 bg-white object-contain object-left p-1 sm:h-10 sm:max-h-14 sm:max-w-[14rem] md:h-11 md:max-h-16 md:max-w-[16rem];
   }
 
-  nav {
-    @apply mx-auto w-full max-w-6xl px-4 pb-4;
+  .header-nav-cluster {
+    @apply flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-x-auto [-webkit-overflow-scrolling:touch];
   }
 
-  nav ul {
-    @apply m-0 flex list-none flex-wrap gap-2 p-0;
+  .header-nav-cluster nav {
+    @apply w-auto max-w-full shrink-0;
   }
 
-  nav li a {
-    @apply inline-flex items-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50;
+  .header-nav-cluster nav ul {
+    @apply m-0 flex list-none flex-nowrap items-center justify-center gap-1.5 p-0 sm:gap-2;
+  }
+
+  .header-nav-cluster nav li {
+    @apply flex shrink-0 items-center;
+  }
+
+  .header-nav-cluster nav li a {
+    @apply inline-flex items-center rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 sm:px-3 sm:text-sm;
   }
 
   /* Primary actions: use class explicitly (no global `button` selector). */

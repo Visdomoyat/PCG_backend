@@ -7,32 +7,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PCG Admin{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/output.css' %}?v={{ CSS_CACHE_VERSION }}">
+    <link rel="icon" href="{% static 'Images/PCGAdmin_logo.png' %}">
 </head>
 
 <body>
     <header class="header">
-        <div class="header-logo-container">
-            <a href="/">
-                <img src=" " alt="PCG Admin">
+        <div class="header-shell">
+            <a href="/" class="header-logo-link">
+                <img src="{% static 'Images/PCGAdmin_logo.png' %}" alt="PCG Admin" width="180" height="48" decoding="async">
             </a>
+            <div class="header-nav-cluster">
+                <nav aria-label="Main navigation">
+                    <ul>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'contentLanding' %}">Content Management</a></li>
+                            <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
+                            <li><a href="{% url 'accountSettings' %}">Account Settings</a></li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="pcg-btn">Logout</button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">Login</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
         </div>
-        <nav>
-            <ul>
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'contentLanding' %}">Content Management</a></li>
-                    <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
-                    <li><a href="{% url 'accountSettings' %}">Account Settings</a></li>
-                    <li>
-                        <form method="post" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <button type="submit" class="pcg-btn">Logout</button>
-                        </form>
-                    </li>
-                {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                {% endif %}
-            </ul>
-        </nav>
     </header>
     <main class="{% block main_classes %}mx-auto w-full max-w-6xl space-y-4 px-4 py-8{% endblock %}">
         {% if messages %}
