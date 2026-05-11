@@ -37,9 +37,18 @@ class SiteContent(models.Model):
         verbose_name = "Site Content"
         verbose_name_plural = "Site Content"
 
+    def _generate_unique_slug(self):
+        base_slug = slugify(self.title) or "site-content"
+        slug_candidate = base_slug
+        suffix = 2
+        while SiteContent.objects.exclude(pk=self.pk).filter(slug=slug_candidate).exists():
+            slug_candidate = f"{base_slug}-{suffix}"
+            suffix += 1
+        return slug_candidate
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = self._generate_unique_slug()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -68,9 +77,18 @@ class Story(models.Model):
     class Meta:
         ordering = ["sort_order", "-published_at", "-created_at"]
 
+    def _generate_unique_slug(self):
+        base_slug = slugify(self.title) or "story"
+        slug_candidate = base_slug
+        suffix = 2
+        while Story.objects.exclude(pk=self.pk).filter(slug=slug_candidate).exists():
+            slug_candidate = f"{base_slug}-{suffix}"
+            suffix += 1
+        return slug_candidate
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = self._generate_unique_slug()
         super().save(*args, **kwargs)
 
     def __str__(self):

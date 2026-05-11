@@ -30,8 +30,41 @@
             {% for entry in entries %}
                 <article>
                     <h3>{{ entry.title }}</h3>
-                    <p><strong>{{ entry.personal_title }}:</strong> {{ entry.personal_bio }}</p>
-                    <p><strong>{{ entry.professional_title }}:</strong> {{ entry.professional_bio }}</p>
+                    <div class="mt-8 grid gap-6 md:grid-cols-2">
+                        <article class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                                {{ entry.personal_title }}
+                            </p>
+                            <h2 class="mb-3 text-2xl font-bold text-zinc-950">{{ entry.personal_title }}</h2>
+                            <p
+                                class="text-zinc-700 bio-text"
+                                style="display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;"
+                                data-expanded="false"
+                            >
+                                {{ entry.personal_bio }}
+                            </p>
+                            <button type="button" class="mt-3 text-sm font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-4 hover:decoration-zinc-900 bio-toggle">
+                                Read more
+                            </button>
+                        </article>
+
+                        <article class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                                {{ entry.professional_title }}
+                            </p>
+                            <h2 class="mb-3 text-2xl font-bold text-zinc-950">{{ entry.professional_title }}</h2>
+                            <p
+                                class="text-zinc-700 bio-text"
+                                style="display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;"
+                                data-expanded="false"
+                            >
+                                {{ entry.professional_bio }}
+                            </p>
+                            <button type="button" class="mt-3 text-sm font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-4 hover:decoration-zinc-900 bio-toggle">
+                                Read more
+                            </button>
+                        </article>
+                    </div>
                     <p><small>Updated: {{ entry.updated_at }}</small></p>
                     <a href="{% url 'editSiteContent' entry.slug %}">Edit</a>
                     <form method="post" action="{% url 'deleteSiteContent' entry.slug %}" style="display:inline;">
@@ -46,4 +79,28 @@
         {% endif %}
     </div>
 </div>
+<script>
+    document.querySelectorAll(".bio-toggle").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const bioText = button.previousElementSibling;
+            const expanded = bioText.dataset.expanded === "true";
+
+            if (expanded) {
+                bioText.style.display = "-webkit-box";
+                bioText.style.WebkitLineClamp = "4";
+                bioText.style.WebkitBoxOrient = "vertical";
+                bioText.style.overflow = "hidden";
+                bioText.dataset.expanded = "false";
+                button.textContent = "Read more";
+            } else {
+                bioText.style.display = "block";
+                bioText.style.WebkitLineClamp = "unset";
+                bioText.style.WebkitBoxOrient = "unset";
+                bioText.style.overflow = "visible";
+                bioText.dataset.expanded = "true";
+                button.textContent = "Show less";
+            }
+        });
+    });
+</script>
 {% endblock %}
