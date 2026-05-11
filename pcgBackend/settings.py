@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'content_app',
     'CRM_app',
     'corsheaders',
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -1,5 +1,11 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from .api_views import SiteContentViewSet
 from . import views
+
+router = DefaultRouter()
+router.register("site-content", SiteContentViewSet, basename="site-content")
 
 urlpatterns = [
     path("", views.content_landing, name="contentLanding"),
@@ -20,4 +26,5 @@ urlpatterns = [
         views.testimonial_detail_api,
         name="testimonialDetailApi",
     ),
+    path("api/v1/", include(router.urls)),
 ]

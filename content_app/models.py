@@ -23,6 +23,7 @@ class SiteContent(models.Model):
     professional_title = models.CharField(max_length=200, default="Professional Biography")
     professional_bio = models.TextField()
     is_active = models.BooleanField(default=True)
+    is_published = models.BooleanField(default=True)
     slug = models.SlugField(unique=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
