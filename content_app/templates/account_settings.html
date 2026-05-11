@@ -13,7 +13,7 @@
             {% csrf_token %}
             <input type="hidden" name="form_type" value="username">
             {{ username_form.as_p }}
-            <button type="submit">Update Username</button>
+            <button type="submit" class="pcg-btn">Update Username</button>
         </form>
 
         <hr />
@@ -23,7 +23,7 @@
             {% csrf_token %}
             <input type="hidden" name="form_type" value="password">
             {{ password_form.as_p }}
-            <button type="submit">Update Password</button>
+            <button type="submit" class="pcg-btn">Update Password</button>
         </form>
     </div>
 </div>
