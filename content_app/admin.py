@@ -3,7 +3,7 @@ from .models import SiteContent, Story, StoryMedia, Testimonial, TestimonialAsse
 
 @admin.register(SiteContent)
 class SiteContentAdmin(admin.ModelAdmin):
-    list_display = ("title", "slug", "is_active", "updated_at", "updated_by")
+    list_display = ("title", "slug", "is_active", "is_published", "updated_at", "updated_by")
     search_fields = ("title", "personal_bio", "professional_bio")
 
 

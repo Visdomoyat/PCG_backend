@@ -90,6 +90,8 @@ class Story(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = self._generate_unique_slug()
+        if self.is_published and self.published_at is None:
+            self.published_at = timezone.now()
         super().save(*args, **kwargs)
 
     def __str__(self):
