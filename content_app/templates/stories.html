@@ -2,13 +2,196 @@
 
 {% block title %}Stories Admin{% endblock %}
 
+{% block main_classes %}mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+
 {% block content %}
-<div class="content-admin-page">
-    <div class="content-admin-container">
-        <h2>Stories Admin</h2>
-        <hr />
-        <p>This stories page is ready for your next CRUD UI step.</p>
-        <a href="{% url 'contentLanding' %}">Back to Content Landing</a>
+<div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Stories</h1>
+            <p class="mt-1 max-w-2xl text-sm text-zinc-600">Compose on the left, control publishing in the middle, and preview the public card on the right.</p>
+        </div>
+        <a href="{% url 'contentLanding' %}" class="admin-btn-secondary shrink-0 text-center text-sm">← Content home</a>
     </div>
+
+    {% if editing_entry %}
+    <form id="stories-admin-form" method="post" enctype="multipart/form-data" action="{% url 'editStory' editing_entry.slug %}" class="space-y-8">
+        <p class="text-sm text-zinc-600">Editing slug: <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-800">{{ editing_entry.slug }}</code></p>
+    {% else %}
+    <form id="stories-admin-form" method="post" enctype="multipart/form-data" action="{% url 'createStory' %}" class="space-y-8">
+    {% endif %}
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:gap-8">
+            {# Left: story fields (no publish toggle) #}
+            <div class="order-1 space-y-4 xl:col-span-5">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Editor</h2>
+                <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+                    {% if form.non_field_errors %}
+                        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    {% for field in form %}
+                        {% if field.name != 'is_published' %}
+                            <div class="mb-4 last:mb-0">
+                                <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-zinc-800">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}<p class="mt-1 text-xs text-zinc-500">{{ field.help_text }}</p>{% endif %}
+                                {% if field.errors %}<p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>{% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Middle: publishing #}
+            <div class="order-2 xl:col-span-3">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Publishing</h2>
+                <div class="mt-3 flex flex-col gap-3">
+                    {% for field in form %}
+                        {% if field.name == 'is_published' %}
+                            <label class="flex cursor-pointer gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 active:bg-zinc-50">
+                                <span class="pt-0.5">{{ field }}</span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block text-sm font-semibold text-zinc-950">{{ field.label }}</span>
+                                    {% if field.help_text %}<span class="mt-1 block text-xs leading-relaxed text-zinc-600">{{ field.help_text }}</span>{% endif %}
+                                    {% if field.errors %}<span class="mt-1 block text-sm text-red-700">{{ field.errors }}</span>{% endif %}
+                                </span>
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-xs leading-relaxed text-zinc-600">
+                        <p class="font-semibold text-zinc-800">Read-only site</p>
+                        <p class="mt-1">Published stories appear in <code class="rounded bg-white px-1 text-zinc-800">GET /api/stories/</code> for your frontend.</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Right: card preview #}
+            <div class="order-3 xl:col-span-4">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Preview</h2>
+                <div class="mt-3 xl:sticky xl:top-24">
+                    <article class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+                        <div class="aspect-[16/9] bg-zinc-100">
+                            <img id="story-preview-cover" src="" alt="" class="hidden h-full w-full object-cover" width="800" height="450" />
+                            <div id="story-preview-cover-placeholder" class="flex h-full min-h-[140px] items-center justify-center text-xs font-medium text-zinc-400">No cover image</div>
+                        </div>
+                        <div class="p-4 sm:p-5">
+                            <p id="story-preview-published" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Draft</p>
+                            <h3 id="story-preview-title" class="mt-2 text-xl font-bold text-zinc-950">—</h3>
+                            <p id="story-preview-excerpt" class="mt-2 text-sm leading-relaxed text-zinc-600">—</p>
+                            <p id="story-preview-order" class="mt-4 border-t border-zinc-100 pt-3 text-xs text-zinc-500">Display order: —</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3 border-t border-zinc-200 pt-6 sm:flex-row sm:flex-wrap sm:items-center">
+            {% if editing_entry %}
+                <button type="submit" class="admin-btn-primary w-full sm:w-auto">Update story</button>
+                <a href="{% url 'storiesPage' %}" class="admin-btn-secondary w-full text-center sm:w-auto">Cancel</a>
+            {% else %}
+                <button type="submit" class="admin-btn-primary w-full sm:w-auto">Create story</button>
+            {% endif %}
+        </div>
+    </form>
+
+    <section class="mt-14 border-t border-zinc-200 pt-10" aria-labelledby="stories-list-heading">
+        <h2 id="stories-list-heading" class="text-xl font-bold text-zinc-950">All stories</h2>
+        {% if entries %}
+            <ul class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {% for entry in entries %}
+                    <li class="flex flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                        {% if entry.cover_image %}
+                            <img src="{{ entry.cover_image.url }}" alt="" class="mb-3 aspect-video w-full rounded-lg object-cover" />
+                        {% else %}
+                            <div class="mb-3 flex aspect-video w-full items-center justify-center rounded-lg bg-zinc-100 text-xs text-zinc-400">No cover</div>
+                        {% endif %}
+                        <h3 class="font-semibold text-zinc-950">{{ entry.title }}</h3>
+                        {% if entry.excerpt %}<p class="mt-1 line-clamp-2 text-sm text-zinc-600">{{ entry.excerpt }}</p>{% endif %}
+                        <p class="mt-2 text-xs text-zinc-500">#{{ entry.sort_order }} · {% if entry.is_published %}Published{% else %}Draft{% endif %}</p>
+                        <div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <a href="{% url 'editStory' entry.slug %}" class="admin-btn-secondary text-center text-sm">Edit</a>
+                            <form method="post" action="{% url 'deleteStory' entry.slug %}" class="inline" onsubmit="return confirm('Delete this story?');">
+                                {% csrf_token %}
+                                <button type="submit" class="admin-btn-danger text-sm">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-600">No stories yet.</p>
+        {% endif %}
+    </section>
 </div>
+
+<script>
+(function () {
+    var form = document.getElementById("stories-admin-form");
+    if (!form) return;
+
+    var coverInput = form.querySelector("#id_cover_image");
+    var coverImg = document.getElementById("story-preview-cover");
+    var coverPh = document.getElementById("story-preview-cover-placeholder");
+    var objectUrl = null;
+
+    function setCoverFromFile(file) {
+        if (objectUrl) {
+            URL.revokeObjectURL(objectUrl);
+            objectUrl = null;
+        }
+        if (file && coverImg && coverPh) {
+            objectUrl = URL.createObjectURL(file);
+            coverImg.src = objectUrl;
+            coverImg.classList.remove("hidden");
+            coverPh.classList.add("hidden");
+        } else if (coverImg && coverPh) {
+            coverImg.removeAttribute("src");
+            coverImg.classList.add("hidden");
+            coverPh.classList.remove("hidden");
+        }
+    }
+
+    function sync() {
+        var title = form.querySelector("#id_title");
+        var excerpt = form.querySelector("#id_excerpt");
+        var order = form.querySelector("#id_sort_order");
+        var pub = form.querySelector("#id_is_published");
+
+        var tEl = document.getElementById("story-preview-title");
+        var eEl = document.getElementById("story-preview-excerpt");
+        var oEl = document.getElementById("story-preview-order");
+        var pEl = document.getElementById("story-preview-published");
+
+        if (tEl) tEl.textContent = title && title.value.trim() ? title.value.trim() : "—";
+        if (eEl) eEl.textContent = excerpt && excerpt.value.trim() ? excerpt.value.trim() : "—";
+        if (oEl) oEl.textContent = "Display order: " + (order && order.value !== "" ? order.value : "0");
+        if (pEl) {
+            pEl.textContent = pub && pub.checked ? "Published" : "Draft";
+            pEl.className = pub && pub.checked
+                ? "text-xs font-semibold uppercase tracking-wider text-zinc-800"
+                : "text-xs font-semibold uppercase tracking-wider text-zinc-500";
+        }
+    }
+
+    form.addEventListener("input", sync);
+    form.addEventListener("change", function (e) {
+        sync();
+        if (e.target === coverInput && coverInput.files && coverInput.files[0]) {
+            setCoverFromFile(coverInput.files[0]);
+        }
+    });
+
+    {% if editing_entry and editing_entry.cover_image %}
+    if (coverImg && coverPh) {
+        coverImg.src = "{{ editing_entry.cover_image.url|escapejs }}";
+        coverImg.classList.remove("hidden");
+        coverPh.classList.add("hidden");
+    }
+    {% endif %}
+
+    sync();
+})();
+</script>
 {% endblock %}

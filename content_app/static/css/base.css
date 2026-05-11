@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@source "../templates/**/*.html";
+
 @layer base {
   * {
     @apply box-border;
@@ -101,5 +103,38 @@
 
   button:hover {
     @apply bg-indigo-700;
+  }
+
+  /* Admin: biography & stories — white / zinc / black, overrides global slate inputs in scope */
+  .admin-zinc-scope input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .admin-zinc-scope textarea,
+  .admin-zinc-scope select {
+    @apply border-zinc-300 bg-white text-zinc-900 shadow-sm;
+  }
+
+  .admin-zinc-scope input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  .admin-zinc-scope textarea:focus,
+  .admin-zinc-scope select:focus {
+    @apply border-zinc-800 ring-2 ring-zinc-200;
+  }
+
+  .admin-zinc-scope input[type="checkbox"] {
+    @apply h-5 w-5 shrink-0 rounded border-zinc-400 text-zinc-900 accent-zinc-900;
+  }
+
+  .admin-zinc-scope input[type="file"] {
+    @apply border-zinc-300 bg-zinc-50 text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white;
+  }
+
+  .admin-zinc-scope .admin-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900;
+  }
+
+  .admin-zinc-scope .admin-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50;
+  }
+
+  .admin-zinc-scope .admin-btn-danger {
+    @apply inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:border-red-300 hover:bg-red-50 hover:text-red-900;
   }
 }

@@ -34,7 +34,7 @@
             </ul>
         </nav>
     </header>
-    <main>
+    <main class="{% block main_classes %}mx-auto w-full max-w-6xl px-4 py-8{% endblock %}">
         {% if messages %}
             {% for message in messages %}
                 <div class="message">{{ message }}</div>
