@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-@source "../templates/**/*.html";
+/*
+  Tailwind scans templates so utility classes used in HTML are included in output.css.
+  Path is relative to this file: static/css → ../../templates = content_app/templates
+*/
+@source "../../templates/**/*.html";
 
 @layer base {
   * {
@@ -8,37 +12,38 @@
   }
 
   body {
-    @apply m-0 min-h-screen bg-slate-100 text-slate-900 antialiased;
+    @apply m-0 min-h-screen bg-zinc-100 text-zinc-900 antialiased;
   }
 
   a {
-    @apply text-slate-700 no-underline transition-colors;
+    @apply text-zinc-700 no-underline transition-colors;
   }
 
   a:hover {
-    @apply text-indigo-600;
+    @apply text-zinc-950;
   }
 
   h1 {
-    @apply text-3xl font-bold tracking-tight text-slate-900;
+    @apply text-3xl font-bold tracking-tight text-zinc-950;
   }
 
   h2 {
-    @apply text-2xl font-semibold text-slate-900;
+    @apply text-2xl font-semibold text-zinc-950;
   }
 
   p {
-    @apply leading-relaxed text-slate-700;
+    @apply leading-relaxed text-zinc-700;
   }
 
   hr {
-    @apply my-4 border-slate-200;
+    @apply my-4 border-zinc-200;
   }
 }
 
 @layer components {
+  /* ——— Shell (header / nav) ——— */
   header {
-    @apply sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur;
+    @apply sticky top-0 z-10 border-b border-zinc-200 bg-white/95 backdrop-blur;
   }
 
   .header-logo-container {
@@ -46,11 +51,11 @@
   }
 
   .header-logo-container a {
-    @apply text-xl font-bold text-slate-900;
+    @apply text-xl font-bold text-zinc-950;
   }
 
   .header-logo-container img {
-    @apply h-10 w-auto rounded-md border border-slate-200 bg-white p-1;
+    @apply h-10 w-auto rounded-md border border-zinc-200 bg-white p-1;
   }
 
   nav {
@@ -62,64 +67,80 @@
   }
 
   nav li a {
-    @apply inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium shadow-sm;
+    @apply inline-flex items-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50;
   }
 
-  nav li a:hover {
-    @apply border-indigo-200 bg-indigo-50 text-indigo-700;
+  /* Primary actions: use class explicitly (no global `button` selector). */
+  .pcg-btn {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900;
   }
 
-  main {
-    @apply mx-auto w-full max-w-6xl px-4 py-8;
+  /* ——— Main column: form fields only inside <main> (avoids fighting header forms) ——— */
+  main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]),
+  main textarea,
+  main select {
+    @apply w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-0 transition;
   }
 
-  main > *:not(:last-child) {
-    @apply mb-4;
+  main input[type="file"] {
+    @apply cursor-pointer border-zinc-300 bg-zinc-50 text-sm text-zinc-700 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white;
+  }
+
+  main input:focus,
+  main textarea:focus,
+  main select:focus {
+    @apply border-zinc-800 ring-2 ring-zinc-200;
+  }
+
+  /* Django messages */
+  .message {
+    @apply mb-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-800 shadow-sm;
+  }
+
+  /* Simple pages: login, account, landing */
+  .content-admin-page {
+    @apply mx-auto max-w-4xl space-y-6;
+  }
+
+  .content-admin-container {
+    @apply rounded-xl border border-zinc-200 bg-white p-6 shadow-sm;
+  }
+
+  /*
+    Landing (and similar) links: global `a { no-underline }` in @layer base can win over
+    single Tailwind utilities depending on cascade. This selector is more specific.
+  */
+  .content-admin-page article a {
+    @apply text-center font-bold text-zinc-900 no-underline decoration-zinc-900 underline-offset-4 transition-colors;
+  }
+
+  .content-admin-page article a:hover {
+    @apply text-zinc-950 underline;
   }
 
   footer {
-    @apply mt-12 border-t border-slate-200 bg-white;
+    @apply mt-12 border-t border-zinc-200 bg-white;
   }
 
   footer p {
-    @apply mx-auto w-full max-w-6xl px-4 py-6 text-sm text-slate-500;
+    @apply mx-auto w-full max-w-6xl px-4 py-6 text-sm text-zinc-500;
   }
 
-  input,
-  textarea,
-  select {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none ring-0 transition;
-  }
-
-  input:focus,
-  textarea:focus,
-  select:focus {
-    @apply border-indigo-400 ring-2 ring-indigo-100;
-  }
-
-  button {
-    @apply inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition;
-  }
-
-  button:hover {
-    @apply bg-indigo-700;
-  }
-
-  /* Admin: biography & stories — white / zinc / black, overrides global slate inputs in scope */
-  .admin-zinc-scope input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  /* ——— Biography & stories admin (zinc / black; wins over main field rules) ——— */
+  .admin-zinc-scope input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]),
   .admin-zinc-scope textarea,
   .admin-zinc-scope select {
     @apply border-zinc-300 bg-white text-zinc-900 shadow-sm;
   }
 
-  .admin-zinc-scope input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  .admin-zinc-scope input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):focus,
   .admin-zinc-scope textarea:focus,
   .admin-zinc-scope select:focus {
     @apply border-zinc-800 ring-2 ring-zinc-200;
   }
 
   .admin-zinc-scope input[type="checkbox"] {
-    @apply h-5 w-5 shrink-0 rounded border-zinc-400 text-zinc-900 accent-zinc-900;
+    @apply h-5 w-5 shrink-0 cursor-pointer rounded border-zinc-400 text-zinc-900 accent-zinc-900;
   }
 
   .admin-zinc-scope input[type="file"] {
@@ -127,7 +148,7 @@
   }
 
   .admin-zinc-scope .admin-btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900;
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900;
   }
 
   .admin-zinc-scope .admin-btn-secondary {
@@ -135,6 +156,6 @@
   }
 
   .admin-zinc-scope .admin-btn-danger {
-    @apply inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:border-red-300 hover:bg-red-50 hover:text-red-900;
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 transition hover:border-red-300 hover:bg-red-50 hover:text-red-900;
   }
 }

@@ -5,6 +5,7 @@
   "scripts": {
     "tailwind:build": "npx @tailwindcss/cli -i ./content_app/static/css/base.css -o ./content_app/static/css/output.css",
     "tailwind:watch": "npx @tailwindcss/cli -i ./content_app/static/css/base.css -o ./content_app/static/css/output.css --watch",
+    "css:build": "npm run tailwind:build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
