@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-pu6%!6hya323^%0j(ix^hj@(!cfoyub^krsvg)i&)5sn3g)_ha
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'http://localhost:5173',
+    'http://localhost:5174',
     'https://pcgllc.netlify.app',
     '127.0.0.1',
 ]
@@ -124,6 +124,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

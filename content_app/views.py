@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .forms import AdminAccountForm, SiteContentForm
+from .forms import AdminAccountForm, SiteContentForm, StoryForm
 from .models import SiteContent, Story, Testimonial
 
 
@@ -102,7 +102,80 @@ def CRMAdmin(request):
 @login_required
 @user_passes_test(_is_staff)
 def stories_page(request):
-    return render(request, "stories.html")
+    entries = Story.objects.order_by("sort_order", "-updated_at")
+    form = StoryForm()
+    return render(
+        request,
+        "stories.html",
+        {
+            "entries": entries,
+            "form": form,
+            "editing_entry": None,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def create_story(request):
+    if request.method != "POST":
+        return redirect("storiesPage")
+    form = StoryForm(request.POST, request.FILES)
+    if form.is_valid():
+        story = form.save(commit=False)
+        story.updated_by = request.user
+        story.save()
+        messages.success(request, "Story created.")
+        return redirect("storiesPage")
+    messages.error(request, "Unable to create story. Please fix the form errors.")
+    entries = Story.objects.order_by("sort_order", "-updated_at")
+    return render(
+        request,
+        "stories.html",
+        {
+            "entries": entries,
+            "form": form,
+            "editing_entry": None,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def edit_story(request, slug):
+    entry = get_object_or_404(Story, slug=slug)
+    if request.method == "POST":
+        form = StoryForm(request.POST, request.FILES, instance=entry)
+        if form.is_valid():
+            updated = form.save(commit=False)
+            updated.updated_by = request.user
+            updated.save()
+            messages.success(request, "Story updated.")
+            return redirect("storiesPage")
+        messages.error(request, "Unable to update story. Please fix the form errors.")
+    else:
+        form = StoryForm(instance=entry)
+
+    entries = Story.objects.order_by("sort_order", "-updated_at")
+    return render(
+        request,
+        "stories.html",
+        {
+            "entries": entries,
+            "form": form,
+            "editing_entry": entry,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def delete_story(request, slug):
+    entry = get_object_or_404(Story, slug=slug)
+    if request.method == "POST":
+        entry.delete()
+        messages.success(request, "Story deleted.")
+    return redirect("storiesPage")
 
 
 @login_required
