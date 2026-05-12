@@ -82,7 +82,11 @@
                         <div class="p-4 sm:p-5">
                             <p id="story-preview-published" class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Draft</p>
                             <h3 id="story-preview-title" class="mt-2 text-xl font-bold text-zinc-950">—</h3>
-                            <p id="story-preview-excerpt" class="mt-2 text-sm leading-relaxed text-zinc-600">—</p>
+                            <div class="story-preview-snippet mt-2">
+                                <p id="story-preview-excerpt" class="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">—</p>
+                                <div id="story-preview-body" class="hidden whitespace-pre-wrap text-sm leading-relaxed text-zinc-700"></div>
+                                <button type="button" id="story-preview-read-toggle" class="story-read-toggle mt-2 hidden text-sm font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-4 hover:decoration-zinc-900" aria-expanded="false">Read more</button>
+                            </div>
                             <p id="story-preview-order" class="mt-4 border-t border-zinc-100 pt-3 text-xs text-zinc-500">Display order: —</p>
                         </div>
                     </article>
@@ -112,7 +116,17 @@
                             <div class="mb-3 flex aspect-video w-full items-center justify-center rounded-lg bg-zinc-100 text-xs text-zinc-400">No cover</div>
                         {% endif %}
                         <h3 class="font-semibold text-zinc-950">{{ entry.title }}</h3>
-                        {% if entry.excerpt %}<p class="mt-1 line-clamp-2 text-sm text-zinc-600">{{ entry.excerpt }}</p>{% endif %}
+                        <div class="story-card-snippet mt-1">
+                            {% if entry.excerpt %}
+                                <p class="story-card-excerpt whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">{{ entry.excerpt }}</p>
+                            {% else %}
+                                <p class="story-card-excerpt text-sm leading-relaxed text-zinc-500 italic">No excerpt</p>
+                            {% endif %}
+                            {% if entry.body %}
+                                <div class="story-card-body hidden whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{{ entry.body }}</div>
+                                <button type="button" class="story-read-toggle mt-2 text-sm font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-4 hover:decoration-zinc-900" aria-expanded="false">Read more</button>
+                            {% endif %}
+                        </div>
                         <p class="mt-2 text-xs text-zinc-500">#{{ entry.sort_order }} · {% if entry.is_published %}Published{% else %}Draft{% endif %}</p>
                         <div class="mt-auto flex flex-wrap gap-2 pt-4">
                             <a href="{% url 'editStory' entry.slug %}" class="admin-btn-secondary text-center text-sm">Edit</a>
@@ -140,6 +154,39 @@
     var coverPh = document.getElementById("story-preview-cover-placeholder");
     var objectUrl = null;
 
+    var previewExcerptEl = document.getElementById("story-preview-excerpt");
+    var previewBodyEl = document.getElementById("story-preview-body");
+    var previewToggleBtn = document.getElementById("story-preview-read-toggle");
+    var previewExpanded = false;
+
+    function setPreviewExpanded(expanded) {
+        previewExpanded = expanded;
+        if (!previewExcerptEl || !previewBodyEl || !previewToggleBtn) return;
+        var hasBody = (previewBodyEl.textContent || "").trim().length > 0;
+        if (!hasBody) {
+            previewToggleBtn.classList.add("hidden");
+            previewExcerptEl.classList.remove("hidden");
+            previewBodyEl.classList.add("hidden");
+            return;
+        }
+        previewToggleBtn.classList.remove("hidden");
+        previewToggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+        previewToggleBtn.textContent = expanded ? "Show less" : "Read more";
+        if (expanded) {
+            previewExcerptEl.classList.add("hidden");
+            previewBodyEl.classList.remove("hidden");
+        } else {
+            previewExcerptEl.classList.remove("hidden");
+            previewBodyEl.classList.add("hidden");
+        }
+    }
+
+    if (previewToggleBtn) {
+        previewToggleBtn.addEventListener("click", function () {
+            setPreviewExpanded(!previewExpanded);
+        });
+    }
+
     function setCoverFromFile(file) {
         if (objectUrl) {
             URL.revokeObjectURL(objectUrl);
@@ -160,16 +207,32 @@
     function sync() {
         var title = form.querySelector("#id_title");
         var excerpt = form.querySelector("#id_excerpt");
+        var body = form.querySelector("#id_body");
         var order = form.querySelector("#id_sort_order");
         var pub = form.querySelector("#id_is_published");
 
         var tEl = document.getElementById("story-preview-title");
         var eEl = document.getElementById("story-preview-excerpt");
+        var bEl = document.getElementById("story-preview-body");
         var oEl = document.getElementById("story-preview-order");
         var pEl = document.getElementById("story-preview-published");
 
         if (tEl) tEl.textContent = title && title.value.trim() ? title.value.trim() : "—";
-        if (eEl) eEl.textContent = excerpt && excerpt.value.trim() ? excerpt.value.trim() : "—";
+
+        var excerptText = excerpt && excerpt.value.trim() ? excerpt.value.trim() : "—";
+        if (eEl) {
+            eEl.textContent = excerptText;
+            if (excerptText === "—") {
+                eEl.classList.add("italic", "text-zinc-500");
+            } else {
+                eEl.classList.remove("italic", "text-zinc-500");
+            }
+        }
+        if (bEl) {
+            bEl.textContent = body && body.value ? body.value : "";
+        }
+        setPreviewExpanded(false);
+
         if (oEl) oEl.textContent = "Display order: " + (order && order.value !== "" ? order.value : "0");
         if (pEl) {
             pEl.textContent = pub && pub.checked ? "Published" : "Draft";
@@ -197,5 +260,27 @@
 
     sync();
 })();
+
+document.querySelectorAll(".story-card-snippet .story-read-toggle").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+        var snippet = btn.closest(".story-card-snippet");
+        if (!snippet) return;
+        var excerpt = snippet.querySelector(".story-card-excerpt");
+        var bodyEl = snippet.querySelector(".story-card-body");
+        if (!bodyEl) return;
+        var expanded = btn.getAttribute("aria-expanded") === "true";
+        expanded = !expanded;
+        btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+        if (expanded) {
+            if (excerpt) excerpt.classList.add("hidden");
+            bodyEl.classList.remove("hidden");
+            btn.textContent = "Show less";
+        } else {
+            if (excerpt) excerpt.classList.remove("hidden");
+            bodyEl.classList.add("hidden");
+            btn.textContent = "Read more";
+        }
+    });
+});
 </script>
 {% endblock %}
