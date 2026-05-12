@@ -6,6 +6,18 @@ from django.utils.text import slugify
 from django.contrib.auth.models import User
 MAX_VIDEO_BYTES = 60 * 1024 * 1024  # 60MB
 
+# Image uploads (extension check). HEIC/HEIF: allowed to store; many browsers still need JPEG/PNG for <img>.
+ALLOWED_IMAGE_UPLOAD_EXTENSIONS = (
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".heic",
+    ".heif",
+)
+# Gallery also allows GIF.
+ALLOWED_GALLERY_IMAGE_EXTENSIONS = ALLOWED_IMAGE_UPLOAD_EXTENSIONS + (".gif",)
+
 
 def validate_video_file(file):
     allowed = [".mp4", ".mov", ".webm"]
@@ -119,9 +131,11 @@ class StoryMedia(models.Model):
         if self.media_type == self.MediaType.VIDEO:
             validate_video_file(self.file)
         elif self.media_type == self.MediaType.IMAGE:
-            allowed = [".jpg", ".jpeg", ".png", ".webp"]
-            if not any(self.file.name.lower().endswith(ext) for ext in allowed):
-                raise ValidationError("Unsupported image format.")
+            name = self.file.name.lower()
+            if not any(name.endswith(ext) for ext in ALLOWED_IMAGE_UPLOAD_EXTENSIONS):
+                raise ValidationError(
+                    "Unsupported image format. Use jpg, png, webp, heic, or heif."
+                )
 
     def __str__(self):
         return f"{self.story.title} - {self.media_type} ({self.file.name})"
@@ -187,11 +201,54 @@ class TestimonialAsset(models.Model):
         return f"{self.testimonial.customer_name} - {self.asset_type}"
 
 
+class GalleryItem(models.Model):
+    """A single image or video in the public gallery (managed in template admin)."""
 
+    class MediaType(models.TextChoices):
+        IMAGE = "image", "Image"
+        VIDEO = "video", "Video"
 
+    name = models.CharField(max_length=200, help_text="Label shown in admin and API.")
+    media_type = models.CharField(max_length=10, choices=MediaType.choices)
+    file = models.FileField(upload_to="gallery/")
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="updated_gallery_items",
+    )
 
+    class Meta:
+        ordering = ["sort_order", "-updated_at"]
+        verbose_name = "Gallery item"
+        verbose_name_plural = "Gallery items"
 
+    def clean(self):
+        super().clean()
+        if not self.file:
+            return
+        if self.media_type == self.MediaType.VIDEO:
+            validate_video_file(self.file)
+        elif self.media_type == self.MediaType.IMAGE:
+            name = self.file.name.lower()
+            if not any(name.endswith(ext) for ext in ALLOWED_GALLERY_IMAGE_EXTENSIONS):
+                raise ValidationError(
+                    "Unsupported image format. Use jpg, png, webp, gif, heic, or heif."
+                )
 
+    def save(self, *args, **kwargs):
+        if self.is_published and self.published_at is None:
+            self.published_at = timezone.now()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_media_type_display()})"
 
 
 

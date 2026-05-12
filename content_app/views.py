@@ -10,8 +10,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .forms import AdminAccountForm, SiteContentForm, StoryForm
-from .models import SiteContent, Story, Testimonial
+from .forms import AdminAccountForm, GalleryItemForm, SiteContentForm, StoryForm
+from .models import GalleryItem, SiteContent, Story, Testimonial
 
 
 def _is_staff(user):
@@ -180,6 +180,81 @@ def delete_story(request, slug):
 
 @login_required
 @user_passes_test(_is_staff)
+def gallery_page(request):
+    entries = GalleryItem.objects.order_by("sort_order", "-updated_at")
+    form = GalleryItemForm()
+    return render(
+        request,
+        "gallery.html",
+        {
+            "entries": entries,
+            "form": form,
+            "editing_entry": None,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def create_gallery_item(request):
+    if request.method != "POST":
+        return redirect("galleryPage")
+    form = GalleryItemForm(request.POST, request.FILES)
+    if form.is_valid():
+        item = form.save(commit=False)
+        item.updated_by = request.user
+        item.save()
+        messages.success(request, "Gallery item created.")
+        return redirect("galleryPage")
+    messages.error(request, "Unable to create item. Please fix the form errors.")
+    entries = GalleryItem.objects.order_by("sort_order", "-updated_at")
+    return render(
+        request,
+        "gallery.html",
+        {"entries": entries, "form": form, "editing_entry": None},
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def edit_gallery_item(request, pk):
+    entry = get_object_or_404(GalleryItem, pk=pk)
+    if request.method == "POST":
+        form = GalleryItemForm(request.POST, request.FILES, instance=entry)
+        if form.is_valid():
+            updated = form.save(commit=False)
+            updated.updated_by = request.user
+            updated.save()
+            messages.success(request, "Gallery item updated.")
+            return redirect("galleryPage")
+        messages.error(request, "Unable to update item. Please fix the form errors.")
+    else:
+        form = GalleryItemForm(instance=entry)
+
+    entries = GalleryItem.objects.order_by("sort_order", "-updated_at")
+    return render(
+        request,
+        "gallery.html",
+        {
+            "entries": entries,
+            "form": form,
+            "editing_entry": entry,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def delete_gallery_item(request, pk):
+    entry = get_object_or_404(GalleryItem, pk=pk)
+    if request.method == "POST":
+        entry.delete()
+        messages.success(request, "Gallery item deleted.")
+    return redirect("galleryPage")
+
+
+@login_required
+@user_passes_test(_is_staff)
 def account_settings(request):
     username_form = AdminAccountForm(instance=request.user)
     password_form = PasswordChangeForm(user=request.user)
@@ -258,6 +333,20 @@ def _story_to_dict(story):
         "created_at": story.created_at.isoformat(),
         "updated_at": story.updated_at.isoformat(),
         "updated_by": story.updated_by.username if story.updated_by else None,
+    }
+
+
+def _gallery_item_to_dict(item):
+    return {
+        "id": item.id,
+        "name": item.name,
+        "media_type": item.media_type,
+        "url": item.file.url if item.file else None,
+        "is_published": item.is_published,
+        "published_at": item.published_at.isoformat() if item.published_at else None,
+        "sort_order": item.sort_order,
+        "created_at": item.created_at.isoformat(),
+        "updated_at": item.updated_at.isoformat(),
     }
 
 
@@ -413,6 +502,24 @@ def story_detail_api(request, slug):
 
     story.delete()
     return JsonResponse({}, status=204)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def gallery_collection_api(request):
+    queryset = GalleryItem.objects.order_by("sort_order", "-updated_at")
+    if not _require_staff(request):
+        queryset = queryset.filter(is_published=True)
+    return JsonResponse({"results": [_gallery_item_to_dict(item) for item in queryset]})
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def gallery_item_detail_api(request, pk):
+    item = get_object_or_404(GalleryItem, pk=pk)
+    if not item.is_published and not _require_staff(request):
+        return JsonResponse({"detail": "Not found."}, status=404)
+    return JsonResponse(_gallery_item_to_dict(item))
 
 
 @csrf_exempt

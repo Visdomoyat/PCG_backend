@@ -1,7 +1,35 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from .models import SiteContent, Story
+from .models import GalleryItem, SiteContent, Story
+
+
+class GalleryItemForm(forms.ModelForm):
+    class Meta:
+        model = GalleryItem
+        fields = ["name", "media_type", "file", "sort_order", "is_published"]
+        labels = {
+            "name": "Display name",
+            "media_type": "Media type",
+            "file": "Image or video file",
+            "sort_order": "Display order (lower shows first)",
+            "is_published": "Publish to public frontend",
+        }
+        help_texts = {
+            "name": "Shown in the admin list and returned by the public gallery API.",
+            "media_type": "Choose image or video before uploading so the file is validated correctly.",
+            "file": "Images: jpg, png, webp, gif, HEIC/HEIF. Videos: mp4, mov, webm. Note: some browsers do not display HEIC in img tags—convert to JPEG/PNG for universal web display.",
+            "is_published": "When on, this item is included in GET /api/gallery/ for anonymous users.",
+        }
+        widgets = {
+            "media_type": forms.RadioSelect,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["file"].required = False
+            self.fields["file"].help_text = "Upload a new file to replace the current one. Leave empty to keep the existing file."
 
 
 class StoryForm(forms.ModelForm):

@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import SiteContent, Story, StoryMedia, Testimonial, TestimonialAsset
+from .models import GalleryItem, SiteContent, Story, StoryMedia, Testimonial, TestimonialAsset
+
+@admin.register(GalleryItem)
+class GalleryItemAdmin(admin.ModelAdmin):
+    list_display = ("name", "media_type", "is_published", "sort_order", "updated_at", "updated_by")
+    list_filter = ("media_type", "is_published")
+    search_fields = ("name",)
+
 
 @admin.register(SiteContent)
 class SiteContentAdmin(admin.ModelAdmin):
