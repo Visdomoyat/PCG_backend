@@ -6,11 +6,12 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from django.db.models import Case, IntegerField, When
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .forms import AdminAccountForm, GalleryItemForm, SiteContentForm, StoryForm
+from .forms import AdminAccountForm, GalleryItemForm, SiteContentForm, StoryForm, TestimonialForm
 from .models import GalleryItem, SiteContent, Story, Testimonial
 
 
@@ -176,6 +177,89 @@ def delete_story(request, slug):
         entry.delete()
         messages.success(request, "Story deleted.")
     return redirect("storiesPage")
+
+
+def _testimonials_queryset():
+    return Testimonial.objects.annotate(
+        status_order=Case(
+            When(status=Testimonial.Status.PENDING, then=0),
+            When(status=Testimonial.Status.APPROVED, then=1),
+            default=2,
+            output_field=IntegerField(),
+        )
+    ).order_by("status_order", "-submitted_at")
+
+
+@login_required
+@user_passes_test(_is_staff)
+def testimonials_page(request):
+    entries = _testimonials_queryset()
+    pending_count = Testimonial.objects.filter(status=Testimonial.Status.PENDING).count()
+    return render(
+        request,
+        "testimonials.html",
+        {
+            "entries": entries,
+            "pending_count": pending_count,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def edit_testimonial(request, pk):
+    entry = get_object_or_404(Testimonial, pk=pk)
+    if request.method == "POST":
+        form = TestimonialForm(request.POST, instance=entry)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Testimonial updated.")
+            return redirect("testimonialsPage")
+        messages.error(request, "Unable to update testimonial. Please fix the form errors.")
+    else:
+        form = TestimonialForm(instance=entry)
+
+    return render(
+        request,
+        "testimonials.html",
+        {
+            "entries": _testimonials_queryset(),
+            "pending_count": Testimonial.objects.filter(status=Testimonial.Status.PENDING).count(),
+            "form": form,
+            "editing_entry": entry,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_staff)
+def review_testimonial(request, pk):
+    if request.method != "POST":
+        return redirect("testimonialsPage")
+    entry = get_object_or_404(Testimonial, pk=pk)
+    action = request.POST.get("action")
+    if action == "approve":
+        entry.mark_reviewed(request.user, Testimonial.Status.APPROVED)
+        entry.save()
+        messages.success(request, f"Approved testimonial from {entry.customer_name}.")
+    elif action == "reject":
+        entry.mark_reviewed(request.user, Testimonial.Status.REJECTED)
+        entry.save()
+        messages.success(request, f"Rejected testimonial from {entry.customer_name}.")
+    else:
+        messages.error(request, "Invalid review action.")
+    return redirect("testimonialsPage")
+
+
+@login_required
+@user_passes_test(_is_staff)
+def delete_testimonial(request, pk):
+    entry = get_object_or_404(Testimonial, pk=pk)
+    if request.method == "POST":
+        name = entry.customer_name
+        entry.delete()
+        messages.success(request, f"Deleted testimonial from {name}.")
+    return redirect("testimonialsPage")
 
 
 @login_required
@@ -535,14 +619,14 @@ def testimonials_collection_api(request):
     if data is None:
         return JsonResponse({"detail": "Invalid JSON payload."}, status=400)
 
-    required_fields = ["customer_name", "customer_email", "headline", "body"]
+    required_fields = ["customer_name", "headline", "body"]
     missing = [field for field in required_fields if not data.get(field)]
     if missing:
         return JsonResponse({"detail": f"Missing required fields: {', '.join(missing)}."}, status=400)
 
     testimonial = Testimonial(
         customer_name=data["customer_name"],
-        customer_email=data["customer_email"],
+        customer_email=(data.get("customer_email") or "").strip(),
         company=data.get("company", ""),
         rating=data.get("rating", 5) or 5,
         headline=data["headline"],

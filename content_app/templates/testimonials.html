@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Testimonials Admin{% endblock %}
+
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+
+{% block content %}
+<div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Testimonials</h1>
+            <p class="mt-1 max-w-2xl text-sm text-zinc-600">
+                Customers submit via <code class="rounded bg-zinc-100 px-1 text-zinc-800">POST /api/testimonials/</code> (name, headline, and body required; email optional).
+                Only <strong>approved</strong> items appear on the read-only site.
+            </p>
+            {% if pending_count %}
+                <p class="mt-2 text-sm font-semibold text-amber-800">{{ pending_count }} pending review</p>
+            {% endif %}
+        </div>
+        <a href="{% url 'contentLanding' %}" class="admin-btn-secondary shrink-0 text-center text-sm">← Content home</a>
+    </div>
+
+    {% if editing_entry and form %}
+        <form
+            method="post"
+            action="{% url 'editTestimonial' editing_entry.pk %}"
+            class="mb-10 space-y-6 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5"
+        >
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Edit testimonial</h2>
+            <p class="text-sm text-zinc-600">
+                Status: <span class="font-semibold text-zinc-950">{{ editing_entry.get_status_display }}</span>
+                · Submitted {{ editing_entry.submitted_at|date:"M j, Y g:i A" }}
+            </p>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+                <div class="mb-4 last:mb-0">
+                    <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-zinc-800">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<p class="mt-1 text-xs text-zinc-500">{{ field.help_text }}</p>{% endif %}
+                    {% if field.errors %}<p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>{% endif %}
+                </div>
+            {% endfor %}
+            <div class="flex flex-col gap-3 border-t border-zinc-200 pt-4 sm:flex-row sm:flex-wrap">
+                <button type="submit" class="admin-btn-primary w-full sm:w-auto">Save changes</button>
+                <a href="{% url 'testimonialsPage' %}" class="admin-btn-secondary w-full text-center sm:w-auto">Cancel</a>
+            </div>
+        </form>
+    {% endif %}
+
+    <section aria-labelledby="testimonials-list-heading">
+        <h2 id="testimonials-list-heading" class="text-xl font-bold text-zinc-950">All testimonials</h2>
+        {% if entries %}
+            <ul class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {% for entry in entries %}
+                    <li class="flex flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm {% if entry.status == 'pending' %}ring-2 ring-amber-200{% endif %}">
+                        <div class="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                                <h3 class="font-semibold text-zinc-950">{{ entry.customer_name }}</h3>
+                                <p class="text-xs text-zinc-500">{% if entry.customer_email %}{{ entry.customer_email }}{% if entry.company %} · {% endif %}{% endif %}{% if entry.company %}{{ entry.company }}{% endif %}</p>
+                            </div>
+                            <span class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide
+                                {% if entry.status == 'pending' %}bg-amber-100 text-amber-900
+                                {% elif entry.status == 'approved' %}bg-emerald-100 text-emerald-900
+                                {% else %}bg-zinc-200 text-zinc-700{% endif %}">
+                                {{ entry.get_status_display }}
+                            </span>
+                        </div>
+                        <p class="mt-3 text-sm font-medium text-zinc-900">{{ entry.headline }}</p>
+                        <p class="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">{{ entry.body }}</p>
+                        <p class="mt-3 text-xs text-zinc-500">
+                            ★ {{ entry.rating }}/5
+                            · {{ entry.submitted_at|date:"M j, Y" }}
+                            {% if entry.is_featured %} · Featured{% endif %}
+                            {% if entry.reviewed_by %} · Reviewed by {{ entry.reviewed_by.username }}{% endif %}
+                        </p>
+                        <div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            {% if entry.status == 'pending' %}
+                                <form method="post" action="{% url 'reviewTestimonial' entry.pk %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve" />
+                                    <button type="submit" class="admin-btn-primary text-sm">Approve</button>
+                                </form>
+                                <form method="post" action="{% url 'reviewTestimonial' entry.pk %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject" />
+                                    <button type="submit" class="admin-btn-secondary text-sm">Reject</button>
+                                </form>
+                            {% elif entry.status == 'rejected' %}
+                                <form method="post" action="{% url 'reviewTestimonial' entry.pk %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve" />
+                                    <button type="submit" class="admin-btn-primary text-sm">Approve</button>
+                                </form>
+                            {% elif entry.status == 'approved' %}
+                                <form method="post" action="{% url 'reviewTestimonial' entry.pk %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject" />
+                                    <button type="submit" class="admin-btn-secondary text-sm">Reject</button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'editTestimonial' entry.pk %}" class="admin-btn-secondary text-center text-sm">Edit</a>
+                            <form method="post" action="{% url 'deleteTestimonial' entry.pk %}" class="inline" onsubmit="return confirm('Delete this testimonial permanently?');">
+                                {% csrf_token %}
+                                <button type="submit" class="admin-btn-danger text-sm">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-600">
+                No testimonials yet. They will appear here when customers submit via the public API.
+            </p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

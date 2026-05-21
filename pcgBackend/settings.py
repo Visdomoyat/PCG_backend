@@ -137,3 +137,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "contentLanding"
 LOGOUT_REDIRECT_URL = "login"
+
+# Admin UI: end session 10 minutes after the last request (works with SessionMiddleware).
+SESSION_COOKIE_AGE = 600  # seconds
+SESSION_SAVE_EVERY_REQUEST = True

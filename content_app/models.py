@@ -148,7 +148,7 @@ class Testimonial(models.Model):
         REJECTED = "rejected", "Rejected"
 
     customer_name = models.CharField(max_length=120)
-    customer_email = models.EmailField()
+    customer_email = models.EmailField(blank=True, default="")
     company = models.CharField(max_length=120, blank=True)
     rating = models.PositiveSmallIntegerField(default=5)
     headline = models.CharField(max_length=200)

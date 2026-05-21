@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from .models import GalleryItem, SiteContent, Story
+from .models import GalleryItem, SiteContent, Story, Testimonial
 
 
 class GalleryItemForm(forms.ModelForm):
@@ -58,6 +58,35 @@ class StoryForm(forms.ModelForm):
             "excerpt": forms.Textarea(attrs={"rows": 3}),
             "body": forms.Textarea(attrs={"rows": 12}),
         }
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = [
+            "customer_name",
+            "customer_email",
+            "company",
+            "rating",
+            "headline",
+            "body",
+            "is_featured",
+        ]
+        labels = {
+            "customer_name": "Customer name",
+            "customer_email": "Email (optional)",
+            "company": "Company (optional)",
+            "rating": "Rating (1–5)",
+            "headline": "Headline",
+            "body": "Testimonial",
+            "is_featured": "Feature on public site",
+        }
+        help_texts = {
+            "is_featured": "Featured testimonials can be highlighted on the read-only frontend.",
+        }
+        widgets = {
+            "body": forms.Textarea(attrs={"rows": 8}),
+        }
+
 
 class SiteContentForm(forms.ModelForm):
     class Meta:
