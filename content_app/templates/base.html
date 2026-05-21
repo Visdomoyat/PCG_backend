@@ -49,6 +49,47 @@
     <footer>
         <p>Copyright 2026 PCG</p>
     </footer>
+    {% if user.is_authenticated %}
+    <form id="auto-logout-form" method="post" action="{% url 'logout' %}" hidden>
+        {% csrf_token %}
+    </form>
+    <script>
+        (function () {
+            var idleMs = 10 * 60 * 1000;
+            var throttleMs = 500;
+            var timer = null;
+            var throttleUntil = 0;
+
+            function submitLogout() {
+                var form = document.getElementById("auto-logout-form");
+                if (form) {
+                    form.submit();
+                }
+            }
+
+            function armTimer() {
+                if (timer) {
+                    clearTimeout(timer);
+                }
+                timer = setTimeout(submitLogout, idleMs);
+            }
+
+            function onActivity() {
+                var now = Date.now();
+                if (now < throttleUntil) {
+                    return;
+                }
+                throttleUntil = now + throttleMs;
+                armTimer();
+            }
+
+            armTimer();
+            ["mousedown", "keydown", "touchstart", "wheel", "click", "scroll"].forEach(function (type) {
+                document.addEventListener(type, onActivity, { capture: true, passive: true });
+            });
+        })();
+    </script>
+    {% endif %}
 </body>
 
 </html>
