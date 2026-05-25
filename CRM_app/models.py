@@ -1,5 +1,19 @@
-# crm/models.py
+from django.conf import settings
 from django.db import models
+
+
+class Service(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
 
 class Lead(models.Model):
     class Source(models.TextChoices):
@@ -31,8 +45,14 @@ class Lead(models.Model):
     status = models.CharField(max_length=30, choices=Status.choices, default=Status.NEW)
     priority = models.PositiveSmallIntegerField(default=3)  # 1 high, 5 low
 
+    services = models.ManyToManyField(Service, blank=True, related_name="leads")
+
     owner = models.ForeignKey(
-        "auth.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="owned_leads"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="owned_leads",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -43,12 +63,20 @@ class Lead(models.Model):
         ordering = ["priority", "-created_at"]
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}".strip() or self.email
+        name = f"{self.first_name} {self.last_name}".strip()
+        return name or self.email
+
+    @property
+    def display_name(self):
+        return str(self)
+
 
 class LeadNote(models.Model):
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name="notes")
     note = models.TextField()
-    created_by = models.ForeignKey("auth.User", null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -56,7 +84,8 @@ class LeadNote(models.Model):
 
     def __str__(self):
         return f"Note for {self.lead_id}"
-# Create your models here.
+
+
 class LeadTask(models.Model):
     class TaskStatus(models.TextChoices):
         OPEN = "open", "Open"
@@ -69,7 +98,11 @@ class LeadTask(models.Model):
     status = models.CharField(max_length=20, choices=TaskStatus.choices, default=TaskStatus.OPEN)
 
     assigned_to = models.ForeignKey(
-        "auth.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="lead_tasks"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="lead_tasks",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

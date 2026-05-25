@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}CRM — Leads{% endblock %}
+
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+
+{% block content %}
+<div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">CRM — Leads</h1>
+            <p class="mt-1 max-w-2xl text-sm text-zinc-600">
+                Track inquiries, status, services, notes, and follow-up tasks.
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'crmServices' %}" class="admin-btn-secondary text-center text-sm">Manage services</a>
+            <a href="{% url 'contentLanding' %}" class="admin-btn-secondary text-center text-sm">← Content home</a>
+        </div>
+    </div>
+
+    <div class="mb-8 flex flex-wrap gap-2">
+        {% for tab in status_tabs %}
+            <a href="{% if tab.value %}{% url 'CRMAdmin' %}?status={{ tab.value }}{% else %}{% url 'CRMAdmin' %}{% endif %}" class="rounded-full px-3 py-1 text-xs font-semibold {% if status_filter == tab.value %}bg-zinc-900 text-white{% else %}bg-zinc-100 text-zinc-700 hover:bg-zinc-200{% endif %}">
+                {{ tab.label }} ({{ tab.count }})
+            </a>
+        {% endfor %}
+    </div>
+
+    <details class="mb-10 rounded-xl border border-zinc-200 bg-white shadow-sm" {% if show_create_form %}open{% endif %}>
+        <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-900 sm:px-5">+ New lead</summary>
+        <form method="post" action="{% url 'createLead' %}" class="space-y-4 border-t border-zinc-200 p-4 sm:p-5">
+            {% csrf_token %}
+            {% if lead_form.non_field_errors %}
+                <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ lead_form.non_field_errors }}</div>
+            {% endif %}
+            <div class="grid gap-4 sm:grid-cols-2">
+                {% for field in lead_form %}
+                    <div class="{% if field.name == 'message' or field.name == 'services' %}sm:col-span-2{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-zinc-800">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="admin-btn-primary">Create lead</button>
+        </form>
+    </details>
+
+    <section aria-labelledby="leads-list-heading">
+        <h2 id="leads-list-heading" class="text-xl font-bold text-zinc-950">Leads</h2>
+        {% if leads %}
+            <ul class="mt-6 divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white shadow-sm">
+                {% for lead in leads %}
+                    <li class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{% url 'editLead' lead.pk %}" class="font-semibold text-zinc-950 hover:underline">{{ lead.display_name }}</a>
+                                <span class="rounded-full px-2 py-0.5 text-xs font-semibold uppercase
+                                    {% if lead.status == 'new' %}bg-amber-100 text-amber-900
+                                    {% elif lead.status == 'won' %}bg-emerald-100 text-emerald-900
+                                    {% elif lead.status == 'lost' %}bg-zinc-200 text-zinc-700
+                                    {% else %}bg-sky-100 text-sky-900{% endif %}">
+                                    {{ lead.get_status_display }}
+                                </span>
+                                <span class="text-xs text-zinc-500">P{{ lead.priority }}</span>
+                            </div>
+                            <p class="mt-1 text-sm text-zinc-600">{{ lead.email }}{% if lead.phone %} · {{ lead.phone }}{% endif %}</p>
+                            {% if lead.event_type or lead.event_date %}
+                                <p class="mt-1 text-xs text-zinc-500">
+                                    {% if lead.event_type %}{{ lead.event_type }}{% endif %}
+                                    {% if lead.event_date %} · {{ lead.event_date|date:"M j, Y" }}{% endif %}
+                                    {% if lead.guest_count %} · {{ lead.guest_count }} guests{% endif %}
+                                </p>
+                            {% endif %}
+                            {% if lead.services.exists %}
+                                <p class="mt-2 text-xs text-zinc-600">
+                                    Services:
+                                    {% for s in lead.services.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </p>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-zinc-400">{{ lead.get_source_display }} · {{ lead.created_at|date:"M j, Y" }}</p>
+                        </div>
+                        <a href="{% url 'editLead' lead.pk %}" class="admin-btn-secondary shrink-0 text-center text-sm">Open</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-600">
+                No leads{% if status_filter %} with this status{% endif %} yet.
+            </p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

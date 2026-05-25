@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}CRM — {{ lead.display_name }}{% endblock %}
+
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+
+{% block content %}
+<div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">{{ lead.display_name }}</h1>
+            <p class="mt-1 text-sm text-zinc-600">
+                <span class="font-semibold">{{ lead.get_status_display }}</span>
+                · {{ lead.get_source_display }}
+                · Created {{ lead.created_at|date:"M j, Y g:i A" }}
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'CRMAdmin' %}" class="admin-btn-secondary text-center text-sm">← All leads</a>
+            <a href="{% url 'crmServices' %}" class="admin-btn-secondary text-center text-sm">Services</a>
+        </div>
+    </div>
+
+    <form method="post" class="mb-4 space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="lead" />
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Lead details</h2>
+        {% if form.non_field_errors %}
+            <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="grid gap-4 sm:grid-cols-2">
+            {% for field in form %}
+                <div class="{% if field.name == 'message' or field.name == 'services' %}sm:col-span-2{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-zinc-800">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<p class="mt-1 text-xs text-zinc-500">{{ field.help_text }}</p>{% endif %}
+                    {% if field.errors %}<p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="border-t border-zinc-200 pt-4">
+            <button type="submit" class="admin-btn-primary">Save lead</button>
+        </div>
+    </form>
+    <form method="post" action="{% url 'deleteLead' lead.pk %}" class="mb-10" onsubmit="return confirm('Delete this lead and all notes/tasks?');">
+        {% csrf_token %}
+        <button type="submit" class="admin-btn-danger text-sm">Delete lead</button>
+    </form>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+        <section class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Notes</h2>
+            <p class="mt-1 text-xs text-zinc-500">Conversation history for this lead.</p>
+            {% if lead.notes.all %}
+                <ul class="mt-4 space-y-3">
+                    {% for note in lead.notes.all %}
+                        <li class="rounded-lg border border-zinc-100 bg-zinc-50 p-3 text-sm">
+                            <p class="whitespace-pre-wrap text-zinc-800">{{ note.note }}</p>
+                            <p class="mt-2 text-xs text-zinc-500">
+                                {% if note.created_by %}{{ note.created_by.username }} · {% endif %}
+                                {{ note.created_at|date:"M j, Y g:i A" }}
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="mt-4 text-sm text-zinc-500">No notes yet.</p>
+            {% endif %}
+            <form method="post" class="mt-4 space-y-3 border-t border-zinc-200 pt-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="note" />
+                {{ note_form.note.label_tag }}
+                {{ note_form.note }}
+                {% if note_form.note.errors %}<p class="text-sm text-red-700">{{ note_form.note.errors }}</p>{% endif %}
+                <button type="submit" class="admin-btn-secondary text-sm">Add note</button>
+            </form>
+        </section>
+
+        <section class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Tasks</h2>
+            <p class="mt-1 text-xs text-zinc-500">Follow-ups and reminders.</p>
+            {% if lead.tasks.all %}
+                <ul class="mt-4 space-y-3">
+                    {% for task in lead.tasks.all %}
+                        <li class="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-zinc-900 {% if task.status == 'done' %}line-through text-zinc-500{% endif %}">{{ task.title }}</p>
+                                <p class="mt-1 text-xs text-zinc-500">
+                                    {{ task.get_status_display }}
+                                    {% if task.due_at %} · Due {{ task.due_at|date:"M j, Y g:i A" }}{% endif %}
+                                    {% if task.assigned_to %} · {{ task.assigned_to.username }}{% endif %}
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                {% if task.status == 'open' %}
+                                    <form method="post" action="{% url 'updateLeadTaskStatus' lead.pk task.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="done" />
+                                        <button type="submit" class="admin-btn-primary text-xs">Done</button>
+                                    </form>
+                                {% elif task.status == 'done' %}
+                                    <form method="post" action="{% url 'updateLeadTaskStatus' lead.pk task.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="open" />
+                                        <button type="submit" class="admin-btn-secondary text-xs">Reopen</button>
+                                    </form>
+                                {% endif %}
+                                <form method="post" action="{% url 'deleteLeadTask' lead.pk task.pk %}" onsubmit="return confirm('Remove this task?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="admin-btn-danger text-xs">Remove</button>
+                                </form>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="mt-4 text-sm text-zinc-500">No tasks yet.</p>
+            {% endif %}
+            <form method="post" class="mt-4 space-y-3 border-t border-zinc-200 pt-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="task" />
+                {% for field in task_form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-zinc-800">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>{% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="admin-btn-secondary text-sm">Add task</button>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}

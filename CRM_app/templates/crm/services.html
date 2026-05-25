@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}CRM — Services{% endblock %}
+
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+
+{% block content %}
+<div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">CRM — Services</h1>
+            <p class="mt-1 max-w-2xl text-sm text-zinc-600">
+                Define services you offer, then attach them to leads (e.g. private dinner, meal prep, event catering).
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'CRMAdmin' %}" class="admin-btn-secondary text-center text-sm">← Leads</a>
+            <a href="{% url 'contentLanding' %}" class="admin-btn-secondary text-center text-sm">Content home</a>
+        </div>
+    </div>
+
+    <form method="post" class="mb-10 space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+        {% csrf_token %}
+        {% if editing_service %}
+            <input type="hidden" name="service_id" value="{{ editing_service.pk }}" />
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Edit service</h2>
+        {% else %}
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Add service</h2>
+        {% endif %}
+        {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-zinc-800">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>{% endif %}
+            </div>
+        {% endfor %}
+        <div class="flex flex-wrap gap-2">
+            <button type="submit" class="admin-btn-primary">{% if editing_service %}Update{% else %}Add{% endif %} service</button>
+            {% if editing_service %}
+                <a href="{% url 'crmServices' %}" class="admin-btn-secondary text-center text-sm">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <section>
+        <h2 class="text-xl font-bold text-zinc-950">All services</h2>
+        {% if services %}
+            <ul class="mt-6 divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white shadow-sm">
+                {% for service in services %}
+                    <li class="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
+                        <div>
+                            <h3 class="font-semibold text-zinc-950">
+                                {{ service.name }}
+                                {% if not service.is_active %}<span class="text-xs font-normal text-zinc-500">(inactive)</span>{% endif %}
+                            </h3>
+                            {% if service.description %}
+                                <p class="mt-1 text-sm text-zinc-600">{{ service.description }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-zinc-500">Order {{ service.sort_order }} · {{ service.leads.count }} lead{{ service.leads.count|pluralize }}</p>
+                        </div>
+                        <div class="flex shrink-0 gap-2">
+                            <a href="{% url 'crmServices' %}?edit={{ service.pk }}" class="admin-btn-secondary text-sm">Edit</a>
+                            <form method="post" action="{% url 'deleteService' service.pk %}" onsubmit="return confirm('Delete this service?');">
+                                {% csrf_token %}
+                                <button type="submit" class="admin-btn-danger text-sm">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-600">
+                No services yet. Add your first service above.
+            </p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
