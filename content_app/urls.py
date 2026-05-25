@@ -26,7 +26,6 @@ urlpatterns = [
     path("content/create/", views.create_site_content, name="createSiteContent"),
     path("content/<slug:slug>/edit/", views.edit_site_content, name="editSiteContent"),
     path("content/<slug:slug>/delete/", views.delete_site_content, name="deleteSiteContent"),
-    path("CRMAdmin/", views.CRMAdmin, name="CRMAdmin"),
     path("api/about/", views.about_collection_api, name="aboutCollectionApi"),
     path("api/about/<slug:slug>/", views.about_detail_api, name="aboutDetailApi"),
     path("api/stories/", views.stories_collection_api, name="storyCollectionApi"),

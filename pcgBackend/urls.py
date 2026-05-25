@@ -32,7 +32,7 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("", include("content_app.urls")),
-    # path("", include("CRM_app.urls")),
+    path("", include("CRM_app.urls")),
 ]
 
 if settings.DEBUG:

@@ -96,12 +96,6 @@ def delete_site_content(request, slug):
 
 @login_required
 @user_passes_test(_is_staff)
-def CRMAdmin(request):
-    return render(request, "CRMAdmin.html")
-
-
-@login_required
-@user_passes_test(_is_staff)
 def stories_page(request):
     entries = Story.objects.order_by("sort_order", "-updated_at")
     form = StoryForm()
