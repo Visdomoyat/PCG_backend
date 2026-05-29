@@ -12,3 +12,8 @@ fi
 
 python manage.py collectstatic --noinput
 python manage.py migrate --noinput
+
+# Create superuser on Render when env vars are set (see README / deploy notes).
+if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
+  python manage.py createsuperuser --noinput || true
+fi
