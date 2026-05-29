@@ -178,9 +178,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = "login"
+LOGIN_URL = "signup"
 LOGIN_REDIRECT_URL = "contentLanding"
-LOGOUT_REDIRECT_URL = "login"
+LOGOUT_REDIRECT_URL = "signup"
 
 # Admin UI: end session 10 minutes after the last request (works with SessionMiddleware).
 SESSION_COOKIE_AGE = 600  # seconds

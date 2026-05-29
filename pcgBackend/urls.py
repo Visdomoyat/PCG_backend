@@ -20,11 +20,15 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
-from pcgBackend.auth_views import LandingLoginView
+from pcgBackend.auth_views import LandingLoginView, SignUpView
+from pcgBackend.user_views import delete_user, manage_users
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/manage/", manage_users, name="manageUsers"),
+    path("accounts/manage/<int:pk>/delete/", delete_user, name="deleteUser"),
+    path("signup/", SignUpView.as_view(), name="signup"),
     path(
         "login/",
         LandingLoginView.as_view(),

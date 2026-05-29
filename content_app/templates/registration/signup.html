@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Login{% endblock %}
+{% block title %}Create account{% endblock %}
 
 {% block content %}
 <div class="content-admin-page">
     <div class="content-admin-container mx-auto max-w-md">
-        <h2>Admin Login</h2>
+        <h2>Create your account</h2>
         <p class="mt-2 text-sm text-zinc-600">
-            New here?
-            <a href="{% url 'signup' %}" class="font-semibold text-zinc-900 underline">Create an account</a>
-            first.
+            Sign up to manage content, testimonials, gallery, and CRM. Already registered?
+            <a href="{% url 'login' %}" class="font-semibold text-zinc-900 underline">Log in</a>.
         </p>
         <hr class="my-6" />
         {% if form.errors %}
-            <p class="mb-4 text-sm text-red-700">Invalid username or password. Please try again.</p>
+            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                Please fix the errors below.
+            </div>
         {% endif %}
         <form method="post" class="space-y-4">
             {% csrf_token %}
@@ -23,12 +24,15 @@
                         {{ field.label }}
                     </label>
                     {{ field }}
+                    {% if field.help_text %}
+                        <p class="mt-1 text-xs text-zinc-500">{{ field.help_text }}</p>
+                    {% endif %}
                     {% if field.errors %}
                         <p class="mt-1 text-sm text-red-700">{{ field.errors }}</p>
                     {% endif %}
                 </div>
             {% endfor %}
-            <button type="submit" class="pcg-btn w-full sm:w-auto">Login</button>
+            <button type="submit" class="pcg-btn w-full sm:w-auto">Create account & continue</button>
         </form>
     </div>
 </div>

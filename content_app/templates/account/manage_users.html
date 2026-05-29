@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage users{% endblock %}
+
+{% block main_classes %}mx-auto w-full max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
+
+{% block content %}
+<div class="admin-zinc-scope min-h-[60vh] bg-zinc-50 text-zinc-900 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:mx-0 lg:rounded-2xl lg:border lg:border-zinc-200 lg:bg-white lg:p-6 lg:shadow-sm">
+    <div class="mb-8 flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Manage users</h1>
+            <p class="mt-1 max-w-2xl text-sm text-zinc-600">
+                Superuser only. Delete staff accounts that should no longer access this admin site.
+            </p>
+        </div>
+        <a href="{% url 'contentLanding' %}" class="admin-btn-secondary shrink-0 text-center text-sm">← Content home</a>
+    </div>
+
+    {% if users %}
+        <ul class="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white shadow-sm">
+            {% for account in users %}
+                <li class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                    <div>
+                        <p class="font-semibold text-zinc-950">
+                            {{ account.username }}
+                            {% if account.pk == user.pk %}
+                                <span class="text-xs font-normal text-zinc-500">(you)</span>
+                            {% endif %}
+                        </p>
+                        <p class="mt-1 text-xs text-zinc-500">
+                            Joined {{ account.date_joined|date:"M j, Y" }}
+                            · {% if account.is_superuser %}Superuser{% elif account.is_staff %}Staff{% else %}User{% endif %}
+                            · {% if account.is_active %}Active{% else %}Inactive{% endif %}
+                        </p>
+                    </div>
+                    {% if account.pk != user.pk %}
+                        <form
+                            method="post"
+                            action="{% url 'deleteUser' account.pk %}"
+                            onsubmit="return confirm('Permanently delete account “{{ account.username }}”? This cannot be undone.');"
+                        >
+                            {% csrf_token %}
+                            <button type="submit" class="admin-btn-danger text-sm">Delete account</button>
+                        </form>
+                    {% else %}
+                        <span class="text-xs text-zinc-500">Use Account Settings to change your password</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-600">
+            No users found.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

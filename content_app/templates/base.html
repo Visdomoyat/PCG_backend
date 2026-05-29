@@ -23,6 +23,9 @@
                             <li><a href="{% url 'contentLanding' %}">Content Management</a></li>
                             <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
                             <li><a href="{% url 'accountSettings' %}">Account Settings</a></li>
+                            {% if user.is_superuser %}
+                                <li><a href="{% url 'manageUsers' %}">Manage users</a></li>
+                            {% endif %}
                             <li>
                                 <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}
@@ -30,6 +33,7 @@
                                 </form>
                             </li>
                         {% else %}
+                            <li><a href="{% url 'signup' %}">Sign up</a></li>
                             <li><a href="{% url 'login' %}">Login</a></li>
                         {% endif %}
                     </ul>
