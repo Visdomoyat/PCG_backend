@@ -1,1 +1,3 @@
-web: gunicorn pcgBackend.wsgi
+web: gunicorn pcgBackend.wsgi --bind 0.0.0.0:$PORT
+postgresql://pcgadmin_user:XaPd43N8kP6sbl351YMF34dCZgbF6Fvk@dpg-d8cd6fm8bjmc73c1v5rg-a/pcgadmin
+
