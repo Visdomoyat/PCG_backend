@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
 /*
   Tailwind scans templates so utility classes used in HTML are included in output.css.
   Path is relative to this file: static/css → ../../templates = content_app/templates
@@ -12,7 +17,7 @@
   }
 
   body {
-    @apply m-0 min-h-screen bg-zinc-100 text-zinc-900 antialiased;
+    @apply m-0 min-h-screen bg-zinc-100 font-sans text-zinc-900 antialiased;
   }
 
   a {
@@ -76,7 +81,11 @@
   }
 
   .header-nav-cluster nav li a {
-    @apply inline-flex items-center rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 sm:px-3 sm:text-sm;
+    @apply inline-flex items-center rounded-lg border border-transparent px-2.5 py-2 text-xs font-medium text-zinc-700 transition hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-950 sm:px-3 sm:text-sm;
+  }
+
+  .header-nav-cluster nav li form button.pcg-btn {
+    @apply border-zinc-800 bg-zinc-800 px-3 py-2 text-xs sm:text-sm;
   }
 
   /* Primary actions: use class explicitly (no global `button` selector). */
@@ -103,12 +112,108 @@
 
   /* Django messages */
   .message {
-    @apply mb-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-800 shadow-sm;
+    @apply mb-3 rounded-lg border px-4 py-3 text-sm shadow-sm;
+  }
+
+  .message.success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-900;
+  }
+
+  .message.error {
+    @apply border-red-200 bg-red-50 text-red-900;
+  }
+
+  .message.warning {
+    @apply border-amber-200 bg-amber-50 text-amber-900;
+  }
+
+  .message.info,
+  .message:not(.success):not(.error):not(.warning) {
+    @apply border-zinc-200 bg-white text-zinc-800;
+  }
+
+  /* ——— Auth (login / sign-up) ——— */
+  .auth-shell {
+    @apply mx-auto grid w-full max-w-4xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg sm:grid-cols-[1fr_1.1fr];
+  }
+
+  .auth-panel-brand {
+    @apply flex flex-col justify-between bg-zinc-950 px-8 py-10 text-white sm:px-10 sm:py-12;
+  }
+
+  .auth-panel-brand h2 {
+    @apply text-2xl font-bold tracking-tight text-white sm:text-3xl;
+  }
+
+  .auth-panel-brand p {
+    @apply text-sm leading-relaxed text-zinc-300;
+  }
+
+  .auth-panel-form {
+    @apply flex flex-col justify-center px-8 py-10 sm:px-10 sm:py-12;
+  }
+
+  .auth-panel-form h2 {
+    @apply text-xl font-bold text-zinc-950 sm:text-2xl;
+  }
+
+  .auth-link {
+    @apply font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-4 transition hover:decoration-zinc-900;
+  }
+
+  /* ——— Dashboard home ——— */
+  .dashboard-hero {
+    @apply mb-8 rounded-2xl border border-zinc-200 bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 px-6 py-8 text-white shadow-sm sm:px-8 sm:py-10;
+  }
+
+  .dashboard-hero h1 {
+    @apply text-2xl font-bold tracking-tight text-white sm:text-3xl;
+  }
+
+  .dashboard-hero p {
+    @apply mt-2 max-w-2xl text-sm leading-relaxed text-zinc-300;
+  }
+
+  .dashboard-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2;
+  }
+
+  .dashboard-card {
+    @apply flex flex-col rounded-xl border border-zinc-200 bg-white p-5 text-inherit no-underline shadow-sm transition hover:border-zinc-300 hover:shadow-md sm:p-6;
+  }
+
+  .dashboard-card-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-zinc-500;
+  }
+
+  .dashboard-card h3 {
+    @apply mt-2 text-lg font-bold text-zinc-950;
+  }
+
+  .dashboard-card p {
+    @apply mt-2 flex-1 text-sm leading-relaxed text-zinc-600;
+  }
+
+  .dashboard-card-action {
+    @apply mt-5 inline-flex items-center text-sm font-semibold text-zinc-900 no-underline transition;
+  }
+
+  .dashboard-card:hover .dashboard-card-action {
+    @apply text-zinc-950;
+  }
+
+  .dashboard-card-action::after {
+    content: "→";
+    @apply ml-1.5 transition;
+  }
+
+  .dashboard-card:hover .dashboard-card-action::after {
+    @apply translate-x-0.5;
   }
 
   /* Simple pages: login, account, landing */
   .content-admin-page {
-    @apply mx-auto max-w-4xl space-y-6;
+    @apply mx-auto max-w-6xl space-y-6;
   }
 
   .content-admin-container {

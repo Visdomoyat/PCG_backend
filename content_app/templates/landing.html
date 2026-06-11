@@ -1,41 +1,54 @@
 {% extends 'base.html' %}
 
-{% block title %}Content Landing{% endblock %}
+{% block title %}Dashboard{% endblock %}
+
+{% block main_classes %}mx-auto w-full max-w-6xl space-y-4 px-4 py-6 sm:px-6 lg:py-8{% endblock %}
 
 {% block content %}
-<div class="content-admin-page">
-    <div class="content-admin-container">
-        <h2>Content Management Home</h2>
-        <hr />
-        <p>Select which section you want to manage.</p>
+<div class="admin-zinc-scope content-admin-page">
+    <div class="dashboard-hero">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">Private Chef Greg</p>
+        <h1 class="mt-2">Content &amp; CRM dashboard</h1>
+        <p>
+            Manage what appears on your public website, review testimonials, and track client leads—all in one place.
+        </p>
     </div>
 
-    <div>
-        <article>
+    <div class="dashboard-grid">
+        <a href="{% url 'contentAdmin' %}" class="dashboard-card">
+            <span class="dashboard-card-label">About page</span>
             <h3>Biography</h3>
-            <p>Manage personal and professional biography content.</p>
-            <a href="{% url 'contentAdmin' %}">Go to Biography</a>
-        </article>
-        <hr />
+            <p>Personal and professional biography shown on the public About Me page.</p>
+            <span class="dashboard-card-action">Open biography</span>
+        </a>
 
-        <article>
+        <a href="{% url 'storiesPage' %}" class="dashboard-card">
+            <span class="dashboard-card-label">Publishing</span>
             <h3>Stories</h3>
-            <p>Manage stories content and publishing.</p>
-            <a href="{% url 'storiesPage' %}">Go to Stories</a>
-        </article>
-        <hr />
+            <p>Write, preview, and publish stories for your read-only marketing site.</p>
+            <span class="dashboard-card-action">Manage stories</span>
+        </a>
 
-        <article>
+        <a href="{% url 'testimonialsPage' %}" class="dashboard-card">
+            <span class="dashboard-card-label">Moderation</span>
             <h3>Testimonials</h3>
-            <p>Review customer submissions, approve or reject before they appear on the read-only site.</p>
-            <a href="{% url 'testimonialsPage' %}">Go to Testimonials</a>
-        </article>
-        <hr />
-        <article>
+            <p>Review customer submissions and approve what appears publicly.</p>
+            <span class="dashboard-card-action">Review testimonials</span>
+        </a>
+
+        <a href="{% url 'galleryPage' %}" class="dashboard-card">
+            <span class="dashboard-card-label">Media</span>
             <h3>Gallery</h3>
-            <p>Upload images and videos, name them, publish to the read-only site, or keep drafts.</p>
-            <a href="{% url 'galleryPage' %}">Go to Gallery</a>
-        </article>
+            <p>Upload images and videos, set order, and publish to the public gallery.</p>
+            <span class="dashboard-card-action">Manage gallery</span>
+        </a>
+
+        <a href="{% url 'CRMAdmin' %}" class="dashboard-card sm:col-span-2">
+            <span class="dashboard-card-label">Clients</span>
+            <h3>CRM — Leads &amp; services</h3>
+            <p>Track inquiries, pipeline status, notes, tasks, and the services you offer.</p>
+            <span class="dashboard-card-action">Open CRM</span>
+        </a>
     </div>
 </div>
 {% endblock %}

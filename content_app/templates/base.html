@@ -6,6 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PCG Admin{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/output.css' %}?v={{ CSS_CACHE_VERSION }}">
     <link rel="icon" href="{% static 'Images/PCGAdmin_logo.png' %}">
 </head>
@@ -20,7 +23,7 @@
                 <nav aria-label="Main navigation">
                     <ul>
                         {% if user.is_authenticated %}
-                            <li><a href="{% url 'contentLanding' %}">Content Management</a></li>
+                            <li><a href="{% url 'contentLanding' %}">Dashboard</a></li>
                             <li><a href="{% url 'CRMAdmin' %}">CRM Management</a></li>
                             <li><a href="{% url 'accountSettings' %}">Account Settings</a></li>
                             {% if user.is_superuser %}
@@ -44,14 +47,14 @@
     <main class="{% block main_classes %}mx-auto w-full max-w-6xl space-y-4 px-4 py-8{% endblock %}">
         {% if messages %}
             {% for message in messages %}
-                <div class="message">{{ message }}</div>
+                <div class="message {{ message.tags|default:'info' }}">{{ message }}</div>
             {% endfor %}
         {% endif %}
         {% block content %}
         {% endblock %}
     </main>
     <footer>
-        <p>Copyright 2026 PCG</p>
+        <p>© {% now "Y" %} Private Chef Greg · Admin portal</p>
     </footer>
     {% if user.is_authenticated %}
     <form id="auto-logout-form" method="post" action="{% url 'logout' %}" hidden>
